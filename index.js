@@ -19,9 +19,12 @@ function Udp(options) {
         this.hostname = hostname;
         this.prefix += this.hostname + '.';
     }
-    this.METHODS = METHODS;
+    this.debug = options.debug;
+    this.enabled = options.enabled !== undefined ? options.enabled : true;
     this.start();
 }
+
+Udp.prototype.METHODS = METHODS;
 
 Udp.prototype.start = function start() {
     this.socket = dgram.createSocket('udp4');
@@ -43,9 +46,16 @@ Udp.prototype.send = function send(key, value, method, callback) {
         key = key.join('.');
     }
 
-    var message = new Buffer(this.prefix + key + ':' + value + ':' + method);
+    var message = this.prefix + key + ':' + value + ':' + method;
+    var buffer = new Buffer(message);
 
-    this.socket.send(message, 0, message.length, this.port, this.host, callback || noop);
+    if (this.debug) {
+        this.log();
+    }
+    if (!this.enabled) {
+        callback(null, buffer.length);
+    }
+    this.socket.send(buffer, 0, buffer.length, this.port, this.host, callback || noop);
 };
 
 Udp.prototype.increment = function increment(key, value, callback) {
@@ -57,7 +67,7 @@ Udp.prototype.decrement = function decrement(key, value, callback) {
 };
 
 Udp.prototype.gauge = function gauge(key, value, callback) {
-    this.send(key, value || 1, this.METHODS.GAUGE, callback);
+    this.send(key, value || 0, this.METHODS.GAUGE, callback);
 };
 
 function noop() {}
