@@ -50,7 +50,7 @@ Udp.prototype.send = function send(key, value, method, callback) {
     var buffer = new Buffer(message);
 
     if (this.debug) {
-        this.log();
+        this.log(message);
     }
     if (!this.enabled) {
         callback(null, buffer.length);
@@ -68,6 +68,10 @@ Udp.prototype.decrement = function decrement(key, value, callback) {
 
 Udp.prototype.gauge = function gauge(key, value, callback) {
     this.send(key, value || 0, this.METHODS.GAUGE, callback);
+};
+
+Udp.prototype.log = function log(message) {
+    console.log('Shelob', 'sent', message);
 };
 
 function noop() {}
