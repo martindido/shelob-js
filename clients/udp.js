@@ -7,6 +7,12 @@ var METHODS = {
     DECREMENT: 'd',
     GAUGE: 'g'
 };
+var SEPARATORS = {
+    SPACE: '_',
+    KEY: '.',
+    MESSAGE: ':'
+};
+var rSpace = / /g;
 
 module.exports = Udp;
 
@@ -14,10 +20,10 @@ function Udp(options) {
     options = options || {};
     this.host = options.host;
     this.port = options.port;
-    this.prefix = options.prefix ? options.prefix + '.' : '';
+    this.prefix = options.prefix ? options.prefix + this.SEPARATORS.KEY : '';
     if (options.hostname) {
         this.hostname = hostname;
-        this.prefix += this.hostname + '.';
+        this.prefix += this.hostname + this.SEPARATORS.KEY;
     }
     this.debug = options.debug;
     this.enabled = options.enabled !== undefined ? options.enabled : true;
@@ -25,6 +31,8 @@ function Udp(options) {
 }
 
 Udp.prototype.METHODS = METHODS;
+
+Udp.prototype.SEPARATORS = SEPARATORS;
 
 Udp.prototype.start = function start() {
     this.socket = dgram.createSocket('udp4');
@@ -43,10 +51,10 @@ Udp.prototype.onError = function onError(err) {
 
 Udp.prototype.send = function send(key, value, method, callback) {
     if (Array.isArray(key)) {
-        key = key.join('.');
+        key = key.join(this.SEPARATORS.KEY);
     }
 
-    var message = this.prefix + key + ':' + value + ':' + method;
+    var message = this.prefix + key + this.SEPARATORS.MESSAGE + value + this.SEPARATORS.MESSAGE + method;
     var buffer = new Buffer(message);
 
     if (this.debug) {
